@@ -1,0 +1,53 @@
+name: Build Windows App
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Build executable
+        shell: pwsh
+        run: |
+          python -m PyInstaller `
+            --onefile `
+            --console `
+            --clean `
+            --name Dcard文章統計 `
+            --collect-all undetected_chromedriver `
+            --collect-all selenium `
+            dcardParserNew.py
+
+      - name: Prepare release package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item dist/Dcard文章統計.exe release/
+          Copy-Item README-Windows.txt release/
+          Compress-Archive -Path release/* -DestinationPath Dcard文章統計-Windows.zip
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dcard文章統計-Windows
+          path: Dcard文章統計-Windows.zip

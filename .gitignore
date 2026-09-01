@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime output
+result.csv
+*.log
+data/
+
+# Packaging output
+build/
+dist/
+*.spec
+*.zip
+
+# Local launchers and skill copies
+Dcard文章統計.command
+Dcard文章統計.bat
+Dcard文章統計-Windows/
+README-Dcard文章統計.md
+chatgpt-skills/
+.agents/
+
+# Local/editor files
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,4 @@
+requests==2.28.2
+webdriver-manager==3.4.1
+selenium==4.7.2
+undetected-chromedriver==3.2.1
