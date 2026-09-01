@@ -36,6 +36,7 @@ jobs:
             --name Dcard文章統計 `
             --collect-all undetected_chromedriver `
             --collect-all selenium `
+            --collect-data certifi `
             dcardParserNew.py
 
       - name: Prepare release package
@@ -79,6 +80,7 @@ jobs:
             --name Dcard文章統計 \
             --collect-all undetected_chromedriver \
             --collect-all selenium \
+            --collect-data certifi \
             dcardParserNew.py
 
       - name: Prepare release package

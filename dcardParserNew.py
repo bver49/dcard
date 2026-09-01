@@ -10,11 +10,24 @@ from __future__ import annotations
 
 from pathlib import Path
 from datetime import datetime
+import os
+import ssl
 import sys
 import traceback
 from typing import Optional, Union
 
+import certifi
+
 from dcard_service import BOARD_DISPLAY_NAMES, DcardScraper, normalize_boards
+
+
+# PyInstaller bundles do not always expose the host Python CA store. Ensure
+# urllib (used by undetected_chromedriver) validates downloads with certifi.
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+os.environ.setdefault("REQUESTS_CA_BUNDLE", certifi.where())
+ssl._create_default_https_context = lambda: ssl.create_default_context(
+    cafile=certifi.where()
+)
 
 
 class dcardParser:
