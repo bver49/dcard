@@ -195,6 +195,7 @@ class DcardScraper:
         random_generator: Optional[random.Random] = None,
         initial_sleep: Sequence[int] = (5, 10),
         page_sleep: Sequence[int] = (10, 25),
+        progress_fn: Callable[[str], None] = print,
     ) -> None:
         self.log_dir = Path(log_dir)
         self.version_main = version_main
@@ -203,6 +204,7 @@ class DcardScraper:
         self.random_generator = random_generator or random.Random()
         self.initial_sleep = initial_sleep
         self.page_sleep = page_sleep
+        self.progress_fn = progress_fn
 
     def fetch_counts(
         self,
@@ -305,6 +307,7 @@ class DcardScraper:
         browser = None
         try:
             browser = self._create_browser()
+            self.progress_fn("開始開啟 {} 看板...".format(BOARD_DISPLAY_NAMES[board_code]))
             browser.get("https://www.dcard.tw/f")
             self._pause(self.initial_sleep)
             browser.get("https://www.dcard.tw/f/{}?tab=latest".format(board_code))
@@ -345,6 +348,19 @@ class DcardScraper:
                 offset += len(posts)
                 next_key = payload.get("nextKey")
                 query = self._next_query(list_key, str(next_key), offset) if next_key else ""
+                oldest_page_date = min(post_dates).isoformat() if post_dates else "未知"
+                progress = "、".join(
+                    "{}={}".format(day, counts[day]) for day in sorted(counts)
+                )
+                self.progress_fn(
+                    "[{}] 第 {} 頁：本頁 {} 筆，最舊日期 {}；累計 {}".format(
+                        BOARD_DISPLAY_NAMES[board_code],
+                        page_number,
+                        len(posts),
+                        oldest_page_date,
+                        progress,
+                    )
+                )
                 if write_logs:
                     self._append_log(board_code, counts, query)
 

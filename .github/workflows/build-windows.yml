@@ -37,6 +37,9 @@ jobs:
             --collect-all undetected_chromedriver `
             --collect-all selenium `
             --collect-data certifi `
+            --hidden-import binascii `
+            --hidden-import _binascii `
+            --hidden-import _ssl `
             dcardParserNew.py
 
       - name: Prepare release package
@@ -81,6 +84,9 @@ jobs:
             --collect-all undetected_chromedriver \
             --collect-all selenium \
             --collect-data certifi \
+            --hidden-import binascii \
+            --hidden-import _binascii \
+            --hidden-import _ssl \
             dcardParserNew.py
 
       - name: Prepare release package
