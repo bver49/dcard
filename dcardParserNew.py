@@ -94,6 +94,9 @@ class dcardParser:
 
 
 if __name__ == "__main__":
+    from multiprocessing import freeze_support
+
+    freeze_support()
     days_before = input("要抓幾天內的資料（不包含今天）：")
     board_num = input(
         "請輸入看板名稱\n"

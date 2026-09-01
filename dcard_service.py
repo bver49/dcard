@@ -281,7 +281,9 @@ class DcardScraper:
     def _create_browser(self) -> Any:
         options = webdriver.ChromeOptions()
         options.add_argument("--incognito")
-        kwargs: Dict[str, Any] = {"options": options}
+        # Avoid re-launching a PyInstaller executable as a child process.
+        # Without this, packaged builds can recursively show the input prompt.
+        kwargs: Dict[str, Any] = {"options": options, "use_subprocess": False}
         if self.version_main is not None:
             kwargs["version_main"] = self.version_main
         return self.browser_factory(**kwargs)
