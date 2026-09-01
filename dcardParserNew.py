@@ -9,6 +9,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import datetime
+import sys
+import traceback
 from typing import Optional, Union
 
 from dcard_service import BOARD_DISPLAY_NAMES, DcardScraper, normalize_boards
@@ -17,31 +20,62 @@ from dcard_service import BOARD_DISPLAY_NAMES, DcardScraper, normalize_boards
 class dcardParser:
     """保留舊 class 名稱，讓既有呼叫方式不需要立刻修改。"""
 
-    def __init__(self, logPath: Union[str, Path] = ".") -> None:
+    def __init__(self, logPath: Optional[Union[str, Path]] = None) -> None:
+        if logPath is None:
+            if getattr(sys, "frozen", False):
+                logPath = Path(sys.executable).resolve().parent
+            else:
+                logPath = Path(__file__).resolve().parent
         self.logPath = str(logPath)
+
+    def _log_path(self) -> Path:
+        log_dir = Path(self.logPath) / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return log_dir / f"dcard_stats_{timestamp}.log"
+
+    @staticmethod
+    def _write_log(path: Path, message: str) -> None:
+        with path.open("a", encoding="utf-8") as output:
+            output.write(message.rstrip() + "\n")
 
     def run(
         self, daysBefore: Union[str, int], boardNum: Union[str, int]
     ) -> Optional[str]:
+        log_path = self._log_path()
+        self._write_log(
+            log_path,
+            "開始執行\n天數：{}\n看板：{}".format(daysBefore, boardNum),
+        )
         try:
             board_code = normalize_boards(boardNum)[0]
-            result = DcardScraper(log_dir=self.logPath).fetch_counts(
+            result = DcardScraper(log_dir=str(Path(self.logPath) / "logs")).fetch_counts(
                 boards=[board_code],
                 days=daysBefore,
                 include_today=False,
             )
-        except (ValueError, RuntimeError) as error:
+        except Exception as error:
+            self._write_log(
+                log_path,
+                "失敗：{}\n{}".format(error, traceback.format_exc()),
+            )
             print("錯誤：{}".format(error))
+            print("詳細 log：{}".format(log_path))
             return None
 
         csv_text = result.to_csv()
         output_path = Path(self.logPath) / "result.csv"
         result.write_csv(output_path)
+        self._write_log(
+            log_path,
+            "成功\n輸出：{}\n{}".format(output_path, csv_text.lstrip("\ufeff")),
+        )
         print(
             "已完成 {} 看板的 CSV 統計：{}".format(
                 BOARD_DISPLAY_NAMES[board_code], output_path
             )
         )
+        print("執行 log：{}".format(log_path))
         print(csv_text.lstrip("\ufeff"))
         return csv_text
 

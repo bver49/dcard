@@ -51,3 +51,47 @@ jobs:
         with:
           name: Dcard文章統計-Windows
           path: Dcard文章統計-Windows.zip
+
+  build-mac:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Build executable
+        run: |
+          python -m PyInstaller \
+            --onefile \
+            --console \
+            --clean \
+            --name Dcard文章統計 \
+            --collect-all undetected_chromedriver \
+            --collect-all selenium \
+            dcardParserNew.py
+
+      - name: Prepare release package
+        run: |
+          mkdir -p release
+          cp dist/Dcard文章統計 release/
+          cp Dcard文章統計-Mac.command release/
+          cp README-Mac.txt release/
+          chmod +x release/Dcard文章統計 release/Dcard文章統計-Mac.command
+          ditto -c -k --sequesterRsrc --keepParent release Dcard文章統計-Mac.zip
+
+      - name: Upload macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dcard文章統計-macOS
+          path: Dcard文章統計-Mac.zip
